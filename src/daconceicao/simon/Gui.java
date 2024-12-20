@@ -10,19 +10,18 @@ import java.util.List;
 public class Gui {
 
     private final JFrame frame = new JFrame("Location Ordinateurs");
-    // Liste pour stocker les ordinateurs (numéro de série + marque)
     private final List<String> ordinateurs = new ArrayList<>();
 
     public Gui() {
         frame.setSize(700, 500);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLocationRelativeTo(null); // Centrer la fenêtre
-        chargerOrdinateursDepuisFichier(); // Charger les ordinateurs depuis le fichier au démarrage
+        frame.setLocationRelativeTo(null);
+        chargerOrdinateursDepuisFichier();
     }
 
     public void mainMenu() {
         JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(6, 1));
+        panel.setLayout(new GridLayout(7, 1));
         frame.add(panel);
 
         JButton louer = new JButton("Louer un ordinateur");
@@ -33,9 +32,13 @@ public class Gui {
         affichage.addActionListener(e -> afficherOrdinateur());
         panel.add(affichage);
 
-        JButton supprimer = new JButton("Supprimez Ordinateur");
+        JButton supprimer = new JButton("Supprimez un ordinateur");
         supprimer.addActionListener(e -> supprimerOrdinateur());
         panel.add(supprimer);
+
+        JButton modifier = new JButton("Modifiez un ordinateur");
+        modifier.addActionListener(e -> modifierOrdinateur());
+        panel.add(modifier);
 
         JButton quitter = new JButton("Quitter");
         quitter.addActionListener(e -> System.exit(0));
@@ -63,7 +66,7 @@ public class Gui {
             if (!numeroSerie.isEmpty() && !marque.isEmpty()) {
                 String ordinateur = "Marque : " + marque + ", Numéro de série : " + numeroSerie;
                 ordinateurs.add(ordinateur);
-                TxtWritter.ajouterOrdinateurDansFichier(ordinateur); // Écrire dans le fichier
+                TxtWritter.ajouterOrdinateurDansFichier(ordinateur);
                 JOptionPane.showMessageDialog(frame, "Ordinateur ajouté avec succès !");
             } else {
                 JOptionPane.showMessageDialog(frame, "Veuillez remplir tous les champs !");
@@ -97,11 +100,56 @@ public class Gui {
             boolean removed = ordinateurs.removeIf(ordinateur -> ordinateur.contains("Numéro de série : " + numeroSerie.trim()));
 
             if (removed) {
-                TxtWritter.sauvegarderListeDansFichier(ordinateurs); // Sauvegarder la liste mise à jour
+                TxtWritter.sauvegarderListeDansFichier(ordinateurs);
                 JOptionPane.showMessageDialog(frame, "Ordinateur supprimé avec succès !");
             } else {
                 JOptionPane.showMessageDialog(frame, "Aucun ordinateur trouvé avec ce numéro de série !");
             }
+        } else {
+            JOptionPane.showMessageDialog(frame, "Numéro de série invalide !");
+        }
+    }
+
+    // Méthode pour modifier un ordinateur
+    public void modifierOrdinateur() {
+        if (ordinateurs.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Aucun ordinateur à modifier !");
+            return;
+        }
+
+        String numeroSerie = JOptionPane.showInputDialog(frame, "Entrez le numéro de série de l'ordinateur à modifier :");
+
+        if (numeroSerie != null && !numeroSerie.trim().isEmpty()) {
+            for (int i = 0; i < ordinateurs.size(); i++) {
+                if (ordinateurs.get(i).contains("Numéro de série : " + numeroSerie.trim())) {
+                    JTextField nouvelleMarqueField = new JTextField();
+                    JTextField nouveauNumeroSerieField = new JTextField();
+
+                    Object[] message = {
+                        "Nouvelle marque :", nouvelleMarqueField,
+                        "Nouveau numéro de série :", nouveauNumeroSerieField
+                    };
+
+                    int option = JOptionPane.showConfirmDialog(frame, message, "Modifier l'ordinateur", JOptionPane.OK_CANCEL_OPTION);
+
+                    if (option == JOptionPane.OK_OPTION) {
+                        String nouvelleMarque = nouvelleMarqueField.getText().trim();
+                        String nouveauNumeroSerie = nouveauNumeroSerieField.getText().trim();
+
+                        if (!nouvelleMarque.isEmpty() && !nouveauNumeroSerie.isEmpty()) {
+                            String nouvelOrdinateur = "Marque : " + nouvelleMarque + ", Numéro de série : " + nouveauNumeroSerie;
+                            ordinateurs.set(i, nouvelOrdinateur); // Modifier dans la liste
+                            TxtWritter.sauvegarderListeDansFichier(ordinateurs); // Mettre à jour le fichier
+                            JOptionPane.showMessageDialog(frame, "Ordinateur modifié avec succès !");
+                            return;
+                        } else {
+                            JOptionPane.showMessageDialog(frame, "Veuillez remplir tous les champs !");
+                            return;
+                        }
+                    }
+                }
+            }
+            JOptionPane.showMessageDialog(frame, "Aucun ordinateur trouvé avec ce numéro de série !");
         } else {
             JOptionPane.showMessageDialog(frame, "Numéro de série invalide !");
         }
